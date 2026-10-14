@@ -18,6 +18,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -77,7 +78,7 @@ export default function Header() {
   const initial = user?.username?.[0]?.toUpperCase() ?? '?'
 
   return (
-    <TooltipProvider >
+    <TooltipProvider>
       <header className="topbar">
         <Link href="/dashboard" className="brand-button">
           <GitHubMark /> <span>github clone</span>
@@ -90,54 +91,62 @@ export default function Header() {
         </nav>
 
         <div className="topbar-actions">
+          {/* Fullscreen — render prop passes the element directly */}
           <div className="desktop-only">
             <Tooltip>
-              <TooltipTrigger >
-                <span>
-                  <FullscreenButton />
-                </span>
-              </TooltipTrigger>
+              <TooltipTrigger render={<FullscreenButton />} />
               <TooltipContent>Toggle fullscreen</TooltipContent>
             </Tooltip>
           </div>
 
+          {/* Theme toggle */}
           <Tooltip>
-            <TooltipTrigger >
-              <button
-                className="theme-button"
-                onClick={toggleTheme}
-                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-              >
-                {theme === 'dark' ? '☼' : '☾'}
-              </button>
-            </TooltipTrigger>
+            <TooltipTrigger
+              render={
+                <button
+                  className="theme-button"
+                  onClick={toggleTheme}
+                  aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+                >
+                  {theme === 'dark' ? '☼' : '☾'}
+                </button>
+              }
+            />
             <TooltipContent>
               Switch to {theme === 'dark' ? 'light' : 'dark'} mode
             </TooltipContent>
           </Tooltip>
 
-          {/* Account dropdown */}
+          {/* Account dropdown — both triggers render into the SAME button */}
           <DropdownMenu>
             <Tooltip>
-              <TooltipTrigger >
-                <DropdownMenuTrigger >
-                  <button className="avatar" aria-label="Account">
-                    {initial}
-                  </button>
-                </DropdownMenuTrigger>
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <DropdownMenuTrigger
+                    render={
+                      <button className="avatar" aria-label="Account">
+                        {initial}
+                      </button>
+                    }
+                  />
+                }
+              />
               <TooltipContent>
                 {user ? `${user.username} · ${user.email}` : 'Account'}
               </TooltipContent>
             </Tooltip>
 
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="flex flex-col">
-                <span className="font-semibold">{user?.username ?? 'Guest'}</span>
-                <span className="text-xs text-muted-foreground">
-                  {user?.email ?? 'Not signed in'}
-                </span>
-              </DropdownMenuLabel>
+              {/* DropdownMenuLabel must live inside a DropdownMenuGroup
+                  in Base UI, otherwise it throws "MenuGroupContext is missing". */}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="flex flex-col">
+                  <span className="font-semibold">{user?.username ?? 'Guest'}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {user?.email ?? 'Not signed in'}
+                  </span>
+                </DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleLogout}
